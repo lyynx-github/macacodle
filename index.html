@@ -48,7 +48,6 @@
 
         button:disabled { background-color: var(--border); cursor: not-allowed; }
 
-        /* Estilo do Botão de Dev Logs */
         #dev-log-trigger {
             position: fixed;
             top: 20px;
@@ -70,8 +69,7 @@
         }
 
         #dev-log-trigger:hover { transform: scale(1.1); }
-
-        /* Estilo do Modal (Janela de Logs) */
+		
         .modal {
             display: none;
             position: fixed;
@@ -113,7 +111,6 @@
         .log-date { font-weight: bold; color: var(--button); font-size: 0.9rem; }
         .log-text { margin-top: 5px; font-size: 1rem; line-height: 1.4; color: #ddd; }
 
-        /* Restante dos estilos originais */
         #victory-card {
             display: none;
             background: rgba(0, 0, 0, 0.7);
@@ -212,7 +209,7 @@
             <input type="text" id="guess-input" list="character-list" placeholder="Adivinhe o maco de hoje">
             <datalist id="character-list"></datalist>
             <button id="btn-chutar" onclick="makeGuess()">Chutar</button>
-            <button onclick="CLEARALL()">CLEAR</button>
+            <!--<button onclick="CLEARALL()">CLEAR</button>-->>
         </div>
 
         <div id="message-area"></div>
@@ -235,14 +232,14 @@
     </div>
 
     <script>
-        // --- ADICIONE SEUS LOGS AQUI ---
         const devLogs = [
 	    {   date: "16/12/2025",
                 text: `
                        <b>Atualização e Bug Fix</b>
                        <ul style="margin: 5px 0; padding-left: 20px;">
-                            <li>Fixado a imagem do <em>Punhotes</em></li>
-                            <li>Novo maco adicionado: <em>Gabs</em></li>
+					   		<li>Hospedagem do site foi alterado para o GitHub Pages para melhor funcionamento.
+                            <li>Fixado a imagem do <em>Punhotes</em>.</li>
+                            <li>Novo maco adicionado: <em>Gabs</em>.</li>
                 `
             },
             { 
@@ -270,7 +267,6 @@
             document.getElementById('logs-modal').style.display = show ? 'block' : 'none';
         }
 
-        // Fecha o modal se clicar fora dele
         window.onclick = function(event) {
             let modal = document.getElementById('logs-modal');
             if (event.target == modal) toggleModal(false);
@@ -288,8 +284,6 @@
                 container.appendChild(entry);
             });
         }
-
-        // --- LÓGICA DO JOGO ORIGINAL ABAIXO ---
         const characters = [
             { name: "Walking", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://imgs.search.brave.com/lHqn9Pk93kkulCkDXHBvYVSxcL4VcWZPFPu97ab9-og/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/cG5nbWFydC5jb20v/ZmlsZXMvMTEvVWdh/bmRhbi1LbnVja2xl/cy1QTkctSW1hZ2Uu/cG5n" }, 
             { name: "Emily", gender: "Feminino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://i.imgur.com/0YriGhz.png" },
@@ -341,10 +335,10 @@
             { name: "Toise", gender: "Masculino", origin: "Capivara", type: "Comum", year: 2024, image: "https://i.imgur.com/SAtLREw.png" },      
         ];
 
-         function CLEARALL() {
-            localStorage.clear();
-            window.location.reload();
-        }
+         //function CLEARALL() {
+         //   localStorage.clear();
+         //   window.location.reload();
+       // }
 
         let secretCharacter;
         let gameOver = false;
@@ -418,7 +412,7 @@
         }
 
         function initGame() {
-            renderLogs(); // Preenche os logs
+            renderLogs();
             const index = getDailyIndex();
             secretCharacter = characters[index];
             
@@ -545,4 +539,5 @@
         });
     </script>
 </body>
+
 </html>
