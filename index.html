@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macacodle</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <style>
+        :root {
+            --bg-color: #121213;
+            --text-color: #ffffff;
+            --correct: #538d4e;
+            --wrong: #ce3939;
+            --partial: #b59f3b;
+            --border: #565758;
+            --button: #4385be;
+        }
+
+        body {
+            font-family: 'Trebuchet MS', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 5px;
+            background-image: url('https://i.imgur.com/Qubrmkf.png');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        h1 { margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        .game-container { width: 100%; max-width: 850px; }
+        .input-area { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+
+        input {
+            padding: 10px; font-size: 16px; background: #2c2c2e;
+            border: 1px solid var(--border); color: white; border-radius: 15px; width: 60%;
+        }
+
+        button {
+            padding: 10px 20px; font-size: 16px; background-color: var(--button);
+            color: white; border: none; border-radius: 15px; cursor: pointer; font-weight: bold;
+        }
+
+        button:disabled { background-color: var(--border); cursor: not-allowed; }
+
+        /* Estilo do Botão de Dev Logs */
+        #dev-log-trigger {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--button);
+            color: white;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        #dev-log-trigger:hover { transform: scale(1.1); }
+
+        /* Estilo do Modal (Janela de Logs) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            margin: 10% auto;
+            padding: 25px;
+            border: 1px solid var(--border);
+            width: 80%;
+            max-width: 500px;
+            border-radius: 20px;
+            position: relative;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--wrong);
+        }
+
+        .log-entry {
+            border-left: 3px solid var(--button);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .log-date { font-weight: bold; color: var(--button); font-size: 0.9rem; }
+        .log-text { margin-top: 5px; font-size: 1rem; line-height: 1.4; color: #ddd; }
+
+        /* Restante dos estilos originais */
+        #victory-card {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid var(--correct);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .victory-img {
+            width: 180px; height: 180px;
+            object-fit: cover; border-radius: 15px;
+            border: 3px solid var(--correct);
+            box-shadow: 0 0 20px var(--correct);
+            margin: 10px 0;
+        }
+
+        .victory-name { font-size: 2rem; color: var(--correct); text-transform: uppercase; margin: 5px 0; }
+        .char-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .headers {
+            display: grid; grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr 1fr; 
+            gap: 5px; margin-bottom: 10px; font-weight: bold; text-align: center;
+            border-bottom: 2px solid var(--border); border-radius: 4px; padding-bottom: 7px; font-size: 0.9rem; 
+        }
+
+        .guess-row { display: grid; grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 5px; }
+
+        .tile {
+            display: flex; align-items: center; justify-content: center;
+            padding: 0px; background-color: var(--bg-color);
+            border: 1px solid var(--border); font-weight: bold;
+            text-transform: capitalize; text-align: center;
+            font-size: 0.9rem; min-height: 50px; 
+        }
+        
+        .tile.default { background-color: var(--bg-color); border-color: var(--border); } 
+        .tile:not(.tile.default) { padding: 15px 5px; }
+        .tile.correct { background-color: var(--correct); border-color: var(--correct); }
+        .tile.wrong { background-color: var(--wrong); border-color: var(--wrong); }
+        .tile.animate { animation: flip 0.5s ease; }
+
+        #message-area { margin-top: 30px; margin-bottom: 30px; font-size: 1.5rem; font-weight: bold; text-align: center; }
+        
+        #timer-container {
+            margin-top: 15px; margin-bottom: 20px; padding: 15px;
+            border-radius: 8px; display: none; text-align: center; font-size: 1.5rem;
+        }
+        #timer-countdown { margin-top: 10px; color: var(--button); font-size: 2rem; text-align: center; }
+
+        @keyframes flip {
+            0% { transform: rotateX(0); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .headers, .guess-row { font-size: 0.7rem; grid-template-columns: 0.4fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr; }
+            .tile { min-height: 40px; }
+            .victory-img { width: 140px; height: 140px; }
+            #dev-log-trigger { top: 10px; right: 10px; width: 35px; height: 35px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="dev-log-trigger" onclick="toggleModal(true)">📜</button>
+
+    <div id="logs-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+            <h2 style="margin-top:0; color: var(--button);">Patch Notes 0.4.6</h2>
+            <hr border="0" style="border-top: 1px solid var(--border); margin-bottom: 20px;">
+            <div id="logs-container">
+                </div>
+        </div>
+    </div>
+
+    <h1>Macacodle</h1>
+
+    <div class="game-container">
+        <div id="victory-card">
+            <div>O maco do dia é:</div>
+            <img id="victory-img" src="" class="victory-img">
+            <div id="victory-name" class="victory-name"></div>
+        </div>
+
+        <div class="input-area" id="ui-area">
+            <input type="text" id="guess-input" list="character-list" placeholder="Adivinhe o maco de hoje">
+            <datalist id="character-list"></datalist>
+            <button id="btn-chutar" onclick="makeGuess()">Chutar</button>
+            <button onclick="CLEARALL()">CLEAR</button>
+        </div>
+
+        <div id="message-area"></div>
+        
+        <div id="timer-container">
+            <div>Próximo maco em:</div>
+            <div id="timer-countdown">00:00:00</div>
+        </div>
+
+        <div class="headers">
+            <div>Foto</div>
+            <div>Personagem</div>
+            <div>Gênero</div>
+            <div>Origem</div>
+            <div>Tipo</div>
+            <div>Ano</div>
+        </div>
+
+        <div id="guesses-container"></div>
+    </div>
+
+    <script>
+        // --- ADICIONE SEUS LOGS AQUI ---
+        const devLogs = [
+	    {   date: "16/12/2025",
+                text: `
+                       <b>Atualização e Bug Fix</b>
+                       <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>Fixado a imagem do <em>Punhotes</em></li>
+                            <li>Novo maco adicionado: <em>Gabs</em></li>
+                `
+            },
+            { 
+                date: "14/12/2025", 
+                text: `
+                        <b>Atualização de Sistema</b>
+                        <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>Adicionado Sistema de Patch Notes.</li>
+                            <li>Implementado destaque visual para o personagem do dia após a vitória.</li>
+                            <li>Walking é viado...</li>
+                `
+            },
+            {
+                date: "13/12/2025,",
+                text: `
+                        <b>Bug Fix</b>
+                        <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>Fixado imagem dos macos que não apareciam.</li>
+                            <li>Atualizado a imagem do maco: <em>Carlotto</em>.</li>
+                `
+            }
+        ];
+
+        function toggleModal(show) {
+            document.getElementById('logs-modal').style.display = show ? 'block' : 'none';
+        }
+
+        // Fecha o modal se clicar fora dele
+        window.onclick = function(event) {
+            let modal = document.getElementById('logs-modal');
+            if (event.target == modal) toggleModal(false);
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logs-container');
+            devLogs.forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <div class="log-date">${log.date}</div>
+                    <div class="log-text">${log.text}</div>
+                `;
+                container.appendChild(entry);
+            });
+        }
+
+        // --- LÓGICA DO JOGO ORIGINAL ABAIXO ---
+        const characters = [
+            { name: "Walking", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://imgs.search.brave.com/lHqn9Pk93kkulCkDXHBvYVSxcL4VcWZPFPu97ab9-og/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/cG5nbWFydC5jb20v/ZmlsZXMvMTEvVWdh/bmRhbi1LbnVja2xl/cy1QTkctSW1hZ2Uu/cG5n" }, 
+            { name: "Emily", gender: "Feminino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://i.imgur.com/0YriGhz.png" },
+            { name: "BrancoSul", gender: "Masculino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://i.imgur.com/SVmqnCN.png" },
+            { name: "Murilipisilon", gender: "Masculino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/1200px-Y_Combinator_logo.svg.png" },
+            { name: "GUIGUI", gender: "Demonio", origin: "Inadmissivel", type: "Vilão Lendário", year: 666, image: "https://i.imgur.com/j4JmkND.png" },
+            { name: "Nick", gender: "Masculino", origin: "Jerusalém", type: "Herói Lendário", year: 0, image: "https://i.imgur.com/Dm0UYme.png" },
+            { name: "Sugar", gender: "Masculino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://imgs.search.brave.com/qMshB3bT4CjdY8pvrS5MNuHFIpn1pY3wbxgzCrlgiBM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9paDEu/cmVkYnViYmxlLm5l/dC9pbWFnZS4zMjM2/NDkzNTE1Ljk2NzEv/cmFmLDM2MHgzNjAs/MDc1LHQsZmFmYWZh/OmNhNDQzZjQ3ODYu/anBn" },
+            { name: "Zamdro", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/n0S5Eog.png" },
+            { name: "GabrielED", gender: "Masculino", origin: "MrBoney", type: "Secreto", year: 2021, image: "https://imgs.search.brave.com/JHGflJmrKq4d_CkLBS7aCMc3sXOMNZyQ8ONMUgGhr98/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLmlt/Z2ZsaXAuY29tLzZl/ajNibC5wbmc" },
+            { name: "Alice", gender: "Feminino", origin: "Bola", type: "Secreto", year: 2023, image: "https://static.wikia.nocookie.net/tsrd/images/4/43/Meio_ogro.jpeg/revision/latest?cb=20200228153723&path-prefix=pt-br" },
+            { name: "O Fred", gender: "Masculino", origin: "Inadmissivel", type: "Secreto", year: 0, image: "https://i.imgur.com/E1l8fF6.png" },
+            { name: "Z", gender: "Z", origin: "Z", type: "Z", year: 0, image: "https://imgs.search.brave.com/TtozjIdkVAAsq3vrq5BdqrVV4Q07lkuwU_hZY9KdqiA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvaGQvbGV0/dGVyLXotaW4tYnVy/bmluZy1mbGFtZS1r/OHp5ejI2MTcxOWE0/dmF0LmpwZw" },
+            { name: "Punhotes", gender: "Masculino", origin: "Bucetinha", type: "Punhotes", year: 2025, image: "https://i.imgur.com/D3uBPOP_d.webp?maxwidth=520&shape=thumb&fidelity=high" },
+            { name: "Luna", gender: "Feminino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/5OsyeXh.png" },
+            { name: "Isa", gender: "Feminino", origin: "MrBoney", type: "Lendário", year: 2023, image: "https://i.imgur.com/6tCISht.png" },
+            { name: "Amanda", gender: "Feminino", origin: "Garu", type: "Secreto", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FTriY85EyHjI%2Fhq720.jpg%3Fsqp%3D-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD%26rs%3DAOn4CLCJjTJh7fyMBMXz5zQ7RSPHimgeTA&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcTvgj37OEk8mmFvRaiXr20xhcqlwcOg1G9-FQ%26s" },
+            { name: "Maffie", gender: "Masculino", origin: "Berdu", type: "Secreto", year: 2023, image: "https://i.imgur.com/k2W4bya.png" },
+            { name: "Exodus", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/9429Dbd.png" },
+            { name: "Macaco", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/XLP5Tg8.png" },
+            { name: "Remos", gender: "Feminino", origin: "Macaco", type: "Lendário", year: 2025, image: "https://i.imgur.com/Nx8el27.png" },
+            { name: "Berdu", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/5LXKGng.png" },
+            { name: "Gabs", gender: "Masculino", origin: "Luna", type: "Épico", year: 2025, image: "https://i.imgur.com/JxnMuzq.png" },
+            { name: "Karma", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2024, image: "https://i.imgur.com/4j1aBzp.png" },
+            { name: "Kishi", gender: "Masculino", origin: "JakePudding", type: "Comum", year: 2025, image: "https://i.imgur.com/l6g9GgJ.png" },
+            { name: "Leo", gender: "Masculino", origin: "JakePudding", type: "Épico", year: 2025, image: "https://i.imgur.com/VQp2HLi.png" },
+            { name: "Polaroid", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2024, image: "https://i.imgur.com/HsJRJVq.png" },
+            { name: "NatashaMigli", gender: "Feminino", origin: "MrFred", type: "Secreto", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fyt3.googleusercontent.com%2FBkfrmx8iNXaTx-Zw-_Ch4iHpkgr4trxCcfkrIDmDmAwoC0VCdxPkSyd6e37G4oTUwMV9vcR-4A%3Ds900-c-k-c0x00ffffff-no-rj&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcSFyyRFhSa4wlypPZyDJ6kWwaog4qqCkrLtOw%26s" },
+            { name: "Vissislau", gender: "Masculino", origin: "MrFred", type: "Mítico", year: 2024, image: "https://i.imgur.com/N6Dayhy.png" },
+            { name: "Naka", gender: "Feminino", origin: "MrFred", type: "Raro", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fen%2Fthumb%2F7%2F77%2FEricCartman.png%2F250px-EricCartman.png&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcSo8g_F2a3jvL5FMx86gVgIY8pYWTVNfYrXGA%26s" },
+            { name: "Bucetinha", gender: "Masculino", origin: "JakePudding", type: "Épico", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fwww.tiktok.com%2Fapi%2Fimg%2F%3FitemId%3D7407486349739068689%26location%3D3%26aid%3D1988%26index%3D0&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcQuARxJhmsGzS6YeBU27PqiyHpz0iO0vEFNcw%26s" },
+            { name: "MrFred", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2023, image: "https://i.imgur.com/tnixBJn.png" },
+            { name: "LuizaLoL", gender: "Feminino", origin: "JakePudding", type: "Incomum", year: 2024, image: "https://i.imgur.com/1mVYgzO.png" },
+            { name: "JakePudding", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fstatic-cdn.jtvnw.net%2Fjtv_user_pictures%2Fd799cca7-7f66-44b4-89e5-75ffbd7b9e1f-profile_image-300x300.png&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcQoZCqvyynStoZCm2j0RmNWILRtgbHPNcv0KQ%26s" },
+            { name: "Aiko-Chan", gender: "Feminino", origin: "JakePudding", type: "Épico", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fstatic.wikia.nocookie.net%2Feeveelutionlovers%2Fimages%2F3%2F38%2FGlaceon.jpg%2Frevision%2Flatest%2Fscale-to-width-down%2F250%3Fcb%3D20200926072218&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcQB7BDo8rUYpruCFfgk-GecXDlbRQY-aEF7Yg%26s" },
+            { name: "Bieluck", gender: "Masculino", origin: "JakePudding", type: "Incomum", year: 2025, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR68vwmxLehqx4RzXnMM0c0OteqPkSjZwWqMQ&s" },
+            { name: "Kleber", gender: "Masculino", origin: "JakePudding", type: "Incomum", year: 2025, image: "https://i.imgur.com/FIL6do0.png" },
+            { name: "Sapo", gender: "Masculino", origin: "JakePudding", type: "Incomum", year: 2025, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fcdn.wcs.org%2F2024%2F03%2F13%2F21%2F14%2F05%2F2d2c6f1b-71c4-4390-b7e2-deb21a0bc11f%2Fshutterstock_2331893385.jpg&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcRW43z5Akg5WIcbb46WszuPDZ0rGSnvEKxWLQ%26s" },
+            { name: "Piolho", gender: "Feminino", origin: "Piolho", type: "Secreto", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fbutantan.gov.br%2Fassets%2Fpage-image%2Fpiolhobufalo750-bd4f370a85e5c7b5.jpg&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcRFEAoQwJMy39rdHFuvCm1oenrIjYKemJFprg%26s" },
+            { name: "Aleicha", gender: "Masculino", origin: "Piolho", type: "Raro", year: 2024, image: "https://i.imgur.com/1Ik5vxx.png" },
+            { name: "Korean", gender: "Masculino", origin: "Berdu", type: "Raro", year: 2024, image: "https://i.imgur.com/SSIndWU.png" },
+            { name: "Barretinhos", gender: "Masculino", origin: "Berdu", type: "Raro", year: 2023, image: "https://i.imgur.com/wqh99JE.png" },
+            { name: "Carlotto", gender: "Masculino", origin: "Berdu", type: "Raro", year: 2023, image: "https://i.imgur.com/fUYdTlL.png" },
+            { name: "Debra", gender: "Feminino", origin: "Berdu", type: "Raro", year: 2025, image: "https://i.imgur.com/XUdfLSn.jpeg" },
+            { name: "Bart Glitch", gender: "Glitch", origin: "Glitch", type: "Glitch", year: 2025, image: "https://i.imgur.com/kqGYUXp.png" },
+            { name: "Arroisi", gender: "Masculino", origin: "Capivara", type: "Comum", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fes-mycooktouch.group-taurus.com%2Fimage%2Frecipe%2F540x391%2Farros-blanc-ben-bo&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcSSH0zNiUnapVnXGBDTHl14WoWQFX7x38Jw0Q%26s" },
+            { name: "DK", gender: "Masculino", origin: "Capivara", type: "Comum", year: 2024, image: "https://i.imgur.com/hzrIXMa.png" },
+            { name: "Fremen", gender: "Masculino", origin: "Capivara", type: "Comum", year: 2024, image: "https://i.imgur.com/evTzFVT.png" },
+            { name: "Toise", gender: "Masculino", origin: "Capivara", type: "Comum", year: 2024, image: "https://i.imgur.com/SAtLREw.png" },      
+        ];
+
+         function CLEARALL() {
+            localStorage.clear();
+            window.location.reload();
+        }
+
+        let secretCharacter;
+        let gameOver = false;
+        let guessedNames = [];
+        const MAX_GUESSES = 10;
+
+        function getBrasiliaDate() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        }
+
+        function getDailyIndex() {
+            const bsbDate = getBrasiliaDate();
+            const EPOCH = new Date("2024-05-20");
+            const diff = bsbDate.setHours(0,0,0,0) - EPOCH.setHours(0,0,0,0);
+            const daysPast = Math.floor(diff / (1000 * 60 * 60 * 24));
+            return daysPast % characters.length;
+        }
+        
+        function getDailyKey() {
+            const bsbDate = getBrasiliaDate();
+            const YYYY = bsbDate.getFullYear();
+            const MM = String(bsbDate.getMonth() + 1).padStart(2, '0');
+            const DD = String(bsbDate.getDate()).padStart(2, '0');
+            return `macacodle-${YYYY}${MM}${DD}`;
+        }
+
+        function saveGameState() {
+            const key = getDailyKey();
+            const state = { guessedNames, gameOver };
+            localStorage.setItem(key, JSON.stringify(state));
+        }
+
+        function loadGameState() {
+            const key = getDailyKey();
+            const savedState = localStorage.getItem(key);
+            
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                guessedNames = state.guessedNames || [];
+                gameOver = state.gameOver || false;
+
+                guessedNames.forEach(name => {
+                    const char = characters.find(c => c.name.toLowerCase() === name.toLowerCase());
+                    if (char) renderGuess(char, false);
+                });
+
+                if (gameOver) {
+                    const lastGuess = guessedNames[guessedNames.length - 1];
+                    if (lastGuess && lastGuess.toLowerCase() === secretCharacter.name.toLowerCase()) {
+                        winGame(true);
+                    } else {
+                        loseGame(true);
+                    }
+                } else if (guessedNames.length > 0) {
+                    showMessage(`Tentativa ${guessedNames.length} de ${MAX_GUESSES}.`, "white");
+                }
+            }
+        }
+
+        function updateTimer() {
+            const agoraBsb = getBrasiliaDate();
+            const amanhaBsb = new Date(agoraBsb);
+            amanhaBsb.setDate(agoraBsb.getDate() + 1);
+            amanhaBsb.setHours(0, 0, 0, 0);
+            const diff = amanhaBsb - agoraBsb;
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('timer-countdown').innerText = 
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function initGame() {
+            renderLogs(); // Preenche os logs
+            const index = getDailyIndex();
+            secretCharacter = characters[index];
+            
+            const dataList = document.getElementById('character-list');
+            [...characters].sort((a, b) => a.name.localeCompare(b.name)).forEach(char => {
+                const option = document.createElement('option');
+                option.value = char.name;
+                dataList.appendChild(option);
+            });
+
+            loadGameState(); 
+
+            if (!gameOver) {
+                showMessage(`Tentativa ${guessedNames.length} de ${MAX_GUESSES}.`, "white");
+            }
+            setInterval(updateTimer, 1000);
+        }
+
+        function makeGuess() {
+            if (gameOver) return;
+            const input = document.getElementById('guess-input');
+            const guessName = input.value.trim();
+            const guessChar = characters.find(c => c.name.toLowerCase() === guessName.toLowerCase());
+            
+            if (!guessChar) {
+                showMessage(`Maco não encontrado! (${guessedNames.length}/${MAX_GUESSES})`, "orange");
+                return;
+            }
+
+            if (guessedNames.includes(guessChar.name)) {
+                showMessage(`Você já tentou este! (${guessedNames.length}/${MAX_GUESSES})`, "#b59f3b");
+                input.value = "";
+                return;
+            }
+
+            guessedNames.push(guessChar.name);
+            saveGameState();
+            renderGuess(guessChar, true);
+            
+            if (guessChar.name === secretCharacter.name) {
+                winGame();
+            } else if (guessedNames.length >= MAX_GUESSES) {
+                loseGame();
+            } else {
+                showMessage(`Tentativa ${guessedNames.length} de ${MAX_GUESSES}.`, "white");
+            }
+            input.value = "";
+        }
+
+        function renderGuess(guess, animate = true) {
+            const container = document.getElementById('guesses-container');
+            const row = document.createElement('div');
+            row.className = 'guess-row';
+
+            const attrs = [
+                { key: 'img', val: guess.image },
+                { key: 'name', val: guess.name, target: secretCharacter.name },
+                { key: 'gen', val: guess.gender, target: secretCharacter.gender },
+                { key: 'orig', val: guess.origin, target: secretCharacter.origin },
+                { key: 'type', val: guess.type, target: secretCharacter.type },
+                { key: 'year', val: guess.year, target: secretCharacter.year }
+            ];
+
+            attrs.forEach((attr, i) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                if (animate) {
+                    tile.classList.add('animate');
+                    tile.style.animationDelay = `${i * 0.5}s`;
+                }
+
+                if (attr.key === 'img') {
+                    tile.classList.add('default');
+                    tile.innerHTML = `<img src="${attr.val}" class="char-img">`;
+                } else {
+                    const isCorrect = attr.val === attr.target;
+                    tile.classList.add(isCorrect ? 'correct' : 'wrong');
+                    let text = attr.val;
+                    if (attr.key === 'year' && !isCorrect) {
+                        text += (attr.val < attr.target) ? " ↑" : " ↓";
+                    }
+                    tile.innerText = text;
+                }
+                row.appendChild(tile);
+            });
+            container.prepend(row);
+        }
+
+        function winGame(isReload = false) {
+            gameOver = true;
+            document.getElementById('guess-input').disabled = true;
+            document.getElementById('btn-chutar').disabled = true;
+            
+            const card = document.getElementById('victory-card');
+            document.getElementById('victory-img').src = secretCharacter.image;
+            document.getElementById('victory-name').innerText = secretCharacter.name;
+            card.style.display = 'block';
+
+            showMessage(`Parabéns! Você descobriu o maco de hoje em ${guessedNames.length} tentativas!`, `#61c958`);
+            document.getElementById('timer-container').style.display = 'block';
+
+            if (!isReload) saveGameState();
+        }
+
+        function loseGame(isReload = false) {
+            gameOver = true;
+            document.getElementById('guess-input').disabled = true;
+            document.getElementById('btn-chutar').disabled = true;
+            showMessage(`Você não conseguiu acertar o maco de hoje. Tente novamente amanhã!`, "red");
+            document.getElementById('timer-container').style.display = 'block';
+            if (!isReload) saveGameState();
+        }
+
+        function showMessage(msg, color) {
+            const area = document.getElementById('message-area');
+            area.style.color = color;
+            area.innerText = msg;
+        }
+
+        initGame();
+
+        document.getElementById('guess-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') makeGuess();
+        });
+    </script>
+</body>
+</html>
