@@ -34,8 +34,17 @@
 
         h1 { margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
         .game-container { width: 100%; max-width: 850px; }
+		
         .input-area { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
 
+		.foster-credit {
+			margin-top: 50px;
+			padding: 10px;
+			font-size: 0.8rem;
+			text-align: center;
+			width: 100%;
+		}
+		
         input {
             padding: 10px; font-size: 16px; background: #2c2c2e;
             border: 1px solid var(--border); color: white; border-radius: 15px; width: 60%;
@@ -204,6 +213,10 @@
             <img id="victory-img" src="" class="victory-img">
             <div id="victory-name" class="victory-name"></div>
         </div>
+
+		<div class="foster-credit">
+			Feito por <strong><em>Berdu</em></strong>
+		</div>
 
         <div class="input-area" id="ui-area">
             <input type="text" id="guess-input" list="character-list" placeholder="Adivinhe o maco de hoje">
@@ -541,5 +554,6 @@
 </body>
 
 </html>
+
 
 
