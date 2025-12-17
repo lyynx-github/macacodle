@@ -79,6 +79,13 @@
         }
 
         #dev-log-trigger:hover { transform: scale(1.1); }
+
+	.streak-display {
+	    margin-top: 10px;
+	    font-size: 1.1rim;
+            color: #ffd700;
+            font-weight: bold;
+	}
 		
         .modal {
             display: none;
@@ -143,6 +150,49 @@
         .victory-name { font-size: 2rem; color: var(--correct); text-transform: uppercase; margin: 5px 0; }
         .char-img { width: 100%; height: 100%; object-fit: cover; }
 
+.legend-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 30px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid var(--border);
+}
+
+.legend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+    background: #2c2c2e;
+    border-radius: 10px;
+    border-bottom: 3px solid var(--button);
+}
+
+.legend-title {
+    font-weight: bold;
+    color: var(--button);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.legend-desc {
+    font-size: 0.9rem;
+    color: #bbb;
+    line-height: 1.2;
+}
+
+/* Ajuste para celulares */
+@media (max-width: 600px) {
+    .legend-container {
+        grid-template-columns: repeat(2, 1fr); /* Vira 2x2 no celular */
+    }
+}
+
         .headers {
             display: grid; grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr 1fr; 
             gap: 5px; margin-bottom: 10px; font-weight: bold; text-align: center;
@@ -168,9 +218,8 @@
         #message-area { margin-top: 30px; margin-bottom: 30px; font-size: 1.5rem; font-weight: bold; text-align: center; }
         
         #timer-container {
-            margin-top: 10px; 
-			margin-bottom: 15px; 
-			padding: 15px;
+            margin-top: 5px; 
+			margin-bottom: 30px;
             display: none; 
 			text-align: center; 
 			font-size: 1.5rem;
@@ -203,7 +252,7 @@
     <div id="logs-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="toggleModal(false)">&times;</span>
-            <h2 style="margin-top:0; color: var(--button);">Patch Notes 0.4.7</h2>
+            <h2 style="margin-top:0; color: var(--button);">Patch Notes 0.5.0</h2>
             <hr border="0" style="border-top: 1px solid var(--border); margin-bottom: 20px;">
             <div id="logs-container">
                 </div>
@@ -217,6 +266,7 @@
             <div>O maco do dia é:</div>
             <img id="victory-img" src="" class="victory-img">
             <div id="victory-name" class="victory-name"></div>
+            <div id="streak-show" class="streak-display"></div>
         </div>
 
         <div class="input-area" id="ui-area">
@@ -229,9 +279,28 @@
         <div id="message-area"></div>
         
         <div id="timer-container">
-            <div>Próximo maco em:</div>
-            <div id="timer-countdown">00:00:00</div>
+            <div><strong>Próximo maco em:</strong></div>
+            <div id="timer-countdown"><strong>00:00:00</strong></div>
         </div>
+
+<div class="legend-container">
+    <div class="legend-item">
+        <span class="legend-title">Gênero</span>
+        <span class="legend-desc">Gênero do personagem</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-title">Origem</span>
+        <span class="legend-desc">De qual grupo ou lugar veio</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-title">Tipo</span>
+        <span class="legend-desc">Raridade ou importância</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-title">Ano</span>
+        <span class="legend-desc">Ano de entrada no servidor</span>
+    </div>
+</div>
 
         <div class="headers">
             <div>Foto</div>
@@ -255,9 +324,11 @@
                 text: `
                        <b>Atualização e Bug Fix</b>
                        <ul style="margin: 5px 0; padding-left: 20px;">
-					   		<li>Hospedagem do site foi alterado para o GitHub Pages para melhor funcionamento.
+			    <li>Hospedagem do site foi alterado para o GitHub Pages para melhor funcionamento.</li>
+                            <li>Sistema de Win Streak foi implementado ao Macacodle.</li>
+                            <li>Adicionado descrições para cada categoria do Macacodle.</li>
+                            <li>Novos macos adicionados: <em>Borat</em>, <em>Gabs</em> e <em>Gabriel Sleeping</em>.</li>
                             <li>Fixado a imagem do <em>Punhotes</em>.</li>
-                            <li>Novo maco adicionado: <em>Gabs</em>.</li>
                 `
             },
             { 
@@ -320,6 +391,7 @@
             { name: "Isa", gender: "Feminino", origin: "MrBoney", type: "Lendário", year: 2023, image: "https://i.imgur.com/6tCISht.png" },
             { name: "Amanda", gender: "Feminino", origin: "Garu", type: "Secreto", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FTriY85EyHjI%2Fhq720.jpg%3Fsqp%3D-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD%26rs%3DAOn4CLCJjTJh7fyMBMXz5zQ7RSPHimgeTA&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcTvgj37OEk8mmFvRaiXr20xhcqlwcOg1G9-FQ%26s" },
             { name: "Maffie", gender: "Masculino", origin: "Berdu", type: "Secreto", year: 2023, image: "https://i.imgur.com/k2W4bya.png" },
+            { name: "Borat", gender: "Masculino", origin: "Berdu", type: "Secreto", year: 2022, image: "https://i.imgur.com/lzoXkte.png" },
             { name: "Exodus", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/9429Dbd.png" },
             { name: "Macaco", gender: "Masculino", origin: "MrBoney", type: "Mítico", year: 2021, image: "https://i.imgur.com/XLP5Tg8.png" },
             { name: "Remos", gender: "Feminino", origin: "Macaco", type: "Lendário", year: 2025, image: "https://i.imgur.com/Nx8el27.png" },
@@ -336,6 +408,7 @@
             { name: "MrFred", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2023, image: "https://i.imgur.com/tnixBJn.png" },
             { name: "LuizaLoL", gender: "Feminino", origin: "JakePudding", type: "Incomum", year: 2024, image: "https://i.imgur.com/1mVYgzO.png" },
             { name: "JakePudding", gender: "Masculino", origin: "JakePudding", type: "Lendário", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fstatic-cdn.jtvnw.net%2Fjtv_user_pictures%2Fd799cca7-7f66-44b4-89e5-75ffbd7b9e1f-profile_image-300x300.png&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcQoZCqvyynStoZCm2j0RmNWILRtgbHPNcv0KQ%26s" },
+            { name: "Gabriel Sleeping", gender: "Masculino", origin: "JakePudding", type: "Épico", year: 2024, image: "https://i.imgur.com/in2Q8Ai.png" },
             { name: "Aiko-Chan", gender: "Feminino", origin: "JakePudding", type: "Épico", year: 2024, image: "https://proxy.notsobot.com/google-images?url=https%3A%2F%2Fstatic.wikia.nocookie.net%2Feeveelutionlovers%2Fimages%2F3%2F38%2FGlaceon.jpg%2Frevision%2Flatest%2Fscale-to-width-down%2F250%3Fcb%3D20200926072218&backup=https%3A%2F%2Fencrypted-tbn0.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcQB7BDo8rUYpruCFfgk-GecXDlbRQY-aEF7Yg%26s" },
             { name: "Bieluck", gender: "Masculino", origin: "JakePudding", type: "Incomum", year: 2025, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR68vwmxLehqx4RzXnMM0c0OteqPkSjZwWqMQ&s" },
             { name: "Kleber", gender: "Masculino", origin: "JakePudding", type: "Incomum", year: 2025, image: "https://i.imgur.com/FIL6do0.png" },
@@ -356,7 +429,7 @@
          //function CLEARALL() {
          //   localStorage.clear();
          //   window.location.reload();
-       // }
+        //}
 
         let secretCharacter;
         let gameOver = false;
@@ -520,29 +593,46 @@
         }
 
         function winGame(isReload = false) {
-            gameOver = true;
-            document.getElementById('guess-input').disabled = true;
-            document.getElementById('btn-chutar').disabled = true;
-            
-            const card = document.getElementById('victory-card');
-            document.getElementById('victory-img').src = secretCharacter.image;
-            document.getElementById('victory-name').innerText = secretCharacter.name;
-            card.style.display = 'block';
+    gameOver = true;
+    document.getElementById('guess-input').disabled = true;
+    document.getElementById('btn-chutar').disabled = true;
+    
+    const card = document.getElementById('victory-card');
+    document.getElementById('victory-img').src = secretCharacter.image;
+    document.getElementById('victory-name').innerText = secretCharacter.name;
+    card.style.display = 'block';
 
-            showMessage(`Parabéns! Você descobriu o maco de hoje em ${guessedNames.length} tentativas!`, `#61c958`);
-            document.getElementById('timer-container').style.display = 'block';
+    // Lógica do Streak
+    let currentStreak = parseInt(localStorage.getItem('macacodle-streak') || 0);
+    
+    if (!isReload) {
+        currentStreak++;
+        localStorage.setItem('macacodle-streak', currentStreak);
+    }
+    
+    document.getElementById('streak-show').innerText = `🔥 Sequência de Vitórias: ${currentStreak}`;
 
-            if (!isReload) saveGameState();
-        }
+    showMessage(`Parabéns! Você descobriu o maco de hoje em ${guessedNames.length} tentativas!`, `#61c958`);
+    document.getElementById('timer-container').style.display = 'block';
+
+    if (!isReload) saveGameState();
+}
 
         function loseGame(isReload = false) {
-            gameOver = true;
-            document.getElementById('guess-input').disabled = true;
-            document.getElementById('btn-chutar').disabled = true;
-            showMessage(`Você não conseguiu acertar o maco de hoje. Tente novamente amanhã!`, "red");
-            document.getElementById('timer-container').style.display = 'block';
-            if (!isReload) saveGameState();
-        }
+    gameOver = true;
+    document.getElementById('guess-input').disabled = true;
+    document.getElementById('btn-chutar').disabled = true;
+
+    // Reseta o streak se o jogador perder (esgotar as 10 tentativas)
+    if (!isReload) {
+        localStorage.setItem('macacodle-streak', 0);
+    }
+
+    showMessage(`Poxa, você não conseguiu acertar o maco de hoje. Sua sequência foi resetada!`, "red");
+    document.getElementById('timer-container').style.display = 'block';
+    
+    if (!isReload) saveGameState();
+}
 
         function showMessage(msg, color) {
             const area = document.getElementById('message-area');
@@ -559,9 +649,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
